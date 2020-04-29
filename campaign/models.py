@@ -2,7 +2,6 @@ from __future__ import unicode_literals
 
 from django import template
 from django.db import models
-from django.utils.encoding import python_2_unicode_compatible
 from django.utils.translation import ugettext_lazy as _
 from django.utils import timezone
 from django.core.mail import EmailMultiAlternatives
@@ -13,7 +12,6 @@ from campaign.context import MailContext
 from campaign.backends import get_backend
 
 
-@python_2_unicode_compatible
 class Newsletter(models.Model):
     """
     Represents a recurring newsletter which users can subscribe to.
@@ -22,7 +20,8 @@ class Newsletter(models.Model):
     name = models.CharField(_("Name"), max_length=255)
     description = models.TextField(_("Description"), blank=True, null=True)
     from_email = models.EmailField(_("Sending Address"), blank=True, null=True)
-    from_name = models.CharField(_("Sender Name"), max_length=255, blank=True, null=True)
+    from_name = models.CharField(
+        _("Sender Name"), max_length=255, blank=True, null=True)
 
     def __str__(self):
         return self.name
@@ -33,7 +32,6 @@ class Newsletter(models.Model):
         ordering = ('name',)
 
 
-@python_2_unicode_compatible
 class MailTemplate(models.Model):
     """
     Holds a template for the email. Both, HTML and plaintext, versions
@@ -57,7 +55,6 @@ class MailTemplate(models.Model):
         ordering = ('name',)
 
 
-@python_2_unicode_compatible
 class SubscriberList(models.Model):
     """
     A pointer to another Django model which holds the subscribers.
@@ -65,8 +62,10 @@ class SubscriberList(models.Model):
     """
     name = models.CharField(_("Name"), max_length=255)
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    filter_condition = JSONField(default="{}", help_text=_("Django ORM compatible lookup kwargs which are used to get the list of objects."))
-    email_field_name = models.CharField(_("Email-Field name"), max_length=64, help_text=_("Name of the model field which stores the recipients email address"))
+    filter_condition = JSONField(default="{}", help_text=_(
+        "Django ORM compatible lookup kwargs which are used to get the list of objects."))
+    email_field_name = models.CharField(_("Email-Field name"), max_length=64, help_text=_(
+        "Name of the model field which stores the recipients email address"))
 
     def __str__(self):
         return self.name
@@ -75,7 +74,7 @@ class SubscriberList(models.Model):
         # simplejson likes to put unicode objects as dictionary keys
         # but keyword arguments must be str type
         fc = {}
-        for k,v in self.filter_condition.items():
+        for k, v in self.filter_condition.items():
             fc.update({str(k): v})
         return fc
 
@@ -92,7 +91,6 @@ class SubscriberList(models.Model):
         ordering = ('name',)
 
 
-@python_2_unicode_compatible
 class Campaign(models.Model):
     """
     A Campaign is the central part of this app. Once a Campaign is created,
@@ -105,12 +103,16 @@ class Campaign(models.Model):
 
     """
     name = models.CharField(_("Name"), max_length=255)
-    newsletter = models.ForeignKey(Newsletter, verbose_name=_("Newsletter"), blank=True, null=True, on_delete=models.CASCADE)
-    template = models.ForeignKey(MailTemplate, verbose_name=_("Template"), on_delete=models.CASCADE)
-    recipients = models.ManyToManyField(SubscriberList, verbose_name=_("Subscriber lists"))
+    newsletter = models.ForeignKey(Newsletter, verbose_name=_(
+        "Newsletter"), blank=True, null=True, on_delete=models.CASCADE)
+    template = models.ForeignKey(MailTemplate, verbose_name=_(
+        "Template"), on_delete=models.CASCADE)
+    recipients = models.ManyToManyField(
+        SubscriberList, verbose_name=_("Subscriber lists"))
     sent = models.BooleanField(_("sent out"), default=False, editable=False)
     sent_at = models.DateTimeField(_("sent at"), blank=True, null=True)
-    online = models.BooleanField(_("available online"), default=True, blank=True, help_text=_("make a copy available online"))
+    online = models.BooleanField(_("available online"), default=True,
+                                 blank=True, help_text=_("make a copy available online"))
 
     def __str__(self):
         return self.name
@@ -135,7 +137,6 @@ class Campaign(models.Model):
         )
 
 
-@python_2_unicode_compatible
 class BlacklistEntry(models.Model):
     """
     If a user has requested removal from the subscriber-list, he is added
