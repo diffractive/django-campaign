@@ -40,7 +40,7 @@ class JSONField(models.TextField):
             value = simplejson.loads(value)
         return value
 
-    def from_db_value(self, value, expression, connection, context):
+    def from_db_value(self, value, expression, connection):
         if isinstance(value, six.string_types):
             value = simplejson.loads(value)
         return value
